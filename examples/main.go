@@ -6,18 +6,35 @@ import (
 	"fmt"
 	oauth "github.com/Umarbatalov/amocrm-oauth"
 	"golang.org/x/oauth2"
+	"io/ioutil"
 	"log"
 	"os"
 )
 
-func StoreNewToken(t *oauth2.Token) error {
-	// persist token
-	return nil // or error
+var tokenFile = "token.json"
+
+type Account struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
 }
 
-type AccountAPI struct {
-	Id   int
-	Name string
+func getTokenFromStore() (*oauth2.Token, error) {
+	f, _ := ioutil.ReadFile(tokenFile)
+	token := &oauth2.Token{}
+
+	err := json.Unmarshal(f, token)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return token, nil
+}
+
+func storeNewToken(t *oauth2.Token) error {
+	j, _ := json.Marshal(t)
+
+	return ioutil.WriteFile(tokenFile, j, 0644)
 }
 
 func main() {
@@ -32,27 +49,36 @@ func main() {
 	ctx := context.Background()
 	conf := oauth.NewConfig(clientId, clientSecret, redirectUrl, baseUrl)
 
-	// Use the authorization code that is pushed to the redirect
-	// URL. Exchange will do the handshake to retrieve the
-	// initial access token. The HTTP Client returned by
-	// conf.Client will refresh the token as necessary.
-	var code string
-	if _, err := fmt.Scan(&code); err != nil {
-		log.Fatal(err)
-	}
+	token, err := getTokenFromStore()
 
-	tok, err := conf.Exchange(ctx, code)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Token from file not found, try create")
+
+		var authCode string
+		if _, err = fmt.Scan(&authCode); err != nil {
+			log.Fatal(err)
+		}
+
+		// Exchange token with auth_code
+		token, err = conf.Exchange(ctx, authCode)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = storeNewToken(token)
+
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
-	src := oauth.NewTokenSource(ctx, conf, tok, StoreNewToken)
+	src := oauth.NewTokenSource(ctx, conf, token, storeNewToken)
 	client := oauth2.NewClient(ctx, src)
-	_ = client
 
 	res, _ := client.Get(baseUrl + "/api/v4/account")
 
-	account := &AccountAPI{}
+	account := &Account{}
 
 	err = json.NewDecoder(res.Body).Decode(account)
 

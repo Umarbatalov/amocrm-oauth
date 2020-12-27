@@ -1,2 +1,4 @@
 .idea
 examples/.env
+examples/token.json
+token.json
