@@ -45,9 +45,7 @@ func main() {
 		Name string `json:"name"`
 	}{}
 
-	err = json.NewDecoder(res.Body).Decode(account)
-
-	if err != nil {
+	if err = json.NewDecoder(res.Body).Decode(account); err != nil {
 		log.Fatal(err)
 	}
 
@@ -84,9 +82,7 @@ func createToken(token *oauth2.Token, conf *oauth2.Config, ctx context.Context) 
 		log.Fatal(err)
 	}
 
-	err = storeNewToken(token)
-
-	if err != nil {
+	if err = storeNewToken(token); err != nil {
 		log.Fatal(err)
 	}
 
@@ -97,9 +93,7 @@ func getTokenFromStore() (*oauth2.Token, error) {
 	f, _ := ioutil.ReadFile(TokenFile)
 	token := &oauth2.Token{}
 
-	err := json.Unmarshal(f, token)
-
-	if err != nil {
+	if err := json.Unmarshal(f, token); err != nil {
 		return nil, err
 	}
 
