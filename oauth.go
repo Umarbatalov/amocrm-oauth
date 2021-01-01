@@ -45,7 +45,7 @@ func NewTokenSource(ctx context.Context, conf *oauth2.Config, t *oauth2.Token, f
 
 // clientId - integration id
 // clientSecret - secret key
-// baseUrl - account url, example: https://rkachko.amocrm.ru
+// baseUrl - account url, example: https://example.amocrm.ru
 func NewConfig(clientId, clientSecret, redirectUrl, baseUrl string) *oauth2.Config {
 	return &oauth2.Config{
 		ClientID:     clientId,
