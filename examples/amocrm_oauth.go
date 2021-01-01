@@ -76,7 +76,11 @@ func main() {
 	src := oauth.NewTokenSource(ctx, conf, token, storeNewToken)
 	client := oauth2.NewClient(ctx, src)
 
-	res, _ := client.Get(baseUrl + "/api/v4/account")
+	res, err := client.Get(baseUrl + "/api/v4/account")
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	account := &Account{}
 
