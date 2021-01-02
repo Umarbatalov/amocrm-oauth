@@ -18,7 +18,7 @@ var (
 	clientId,
 	clientSecret,
 	redirectUrl,
-	baseUrl string
+	accountUrl string
 )
 
 func init() {
@@ -28,11 +28,11 @@ func init() {
 	clientId = os.Getenv("CLIENT_ID")
 	clientSecret = os.Getenv("CLIENT_SECRET")
 	redirectUrl = os.Getenv("REDIRECT_URL")
-	baseUrl = os.Getenv("BASE_URL")
+	accountUrl = os.Getenv("BASE_URL")
 }
 
 func main() {
-	res, err := client().Get(baseUrl + "/api/v4/account")
+	res, err := client().Get(accountUrl + "/api/v4/account")
 
 	if err != nil {
 		log.Fatal(err)
@@ -52,14 +52,7 @@ func main() {
 
 func client() *http.Client {
 	ctx := context.Background()
-
-	conf := &oauth2.Config{
-		ClientID:     clientId,
-		ClientSecret: clientSecret,
-		RedirectURL:  redirectUrl,
-		Endpoint:     oauth.Endpoint(baseUrl),
-	}
-
+	conf := oauth.NewConfig(clientId, clientSecret, redirectUrl, accountUrl)
 	token, err := getTokenFromStore()
 
 	if err != nil {
@@ -68,7 +61,18 @@ func client() *http.Client {
 		err, token = createToken(token, conf, ctx)
 	}
 
-	return oauth.New(ctx, conf, token, storeNewToken)
+	return oauth.NewClient(ctx, conf, token, storeToken)
+}
+
+func getTokenFromStore() (*oauth2.Token, error) {
+	f, _ := ioutil.ReadFile(TokenFile)
+	token := &oauth2.Token{}
+
+	if err := json.Unmarshal(f, token); err != nil {
+		return nil, err
+	}
+
+	return token, nil
 }
 
 func createToken(token *oauth2.Token, conf *oauth2.Config, ctx context.Context) (error, *oauth2.Token) {
@@ -84,25 +88,14 @@ func createToken(token *oauth2.Token, conf *oauth2.Config, ctx context.Context) 
 		log.Fatal(err)
 	}
 
-	if err = storeNewToken(token); err != nil {
+	if err = storeToken(token); err != nil {
 		log.Fatal(err)
 	}
 
 	return err, token
 }
 
-func getTokenFromStore() (*oauth2.Token, error) {
-	f, _ := ioutil.ReadFile(TokenFile)
-	token := &oauth2.Token{}
-
-	if err := json.Unmarshal(f, token); err != nil {
-		return nil, err
-	}
-
-	return token, nil
-}
-
-func storeNewToken(t *oauth2.Token) error {
+func storeToken(t *oauth2.Token) error {
 	j, _ := json.Marshal(t)
 
 	return ioutil.WriteFile(TokenFile, j, 0644)
