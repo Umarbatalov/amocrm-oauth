@@ -8,7 +8,6 @@ import (
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 )
 
@@ -32,7 +31,7 @@ func init() {
 }
 
 func main() {
-	client := GetClient()
+	client := getOAuth().GetClient()
 
 	res, err := client.Get(baseUrl + "/api/v4/account")
 
@@ -52,7 +51,7 @@ func main() {
 	log.Println(fmt.Sprintf("Account: %+v", *account))
 }
 
-func GetClient() *http.Client {
+func getOAuth() *oauth.OAuth {
 	ctx := context.Background()
 	conf := oauth.NewConfig(clientId, clientSecret, redirectUrl, baseUrl)
 
@@ -64,9 +63,7 @@ func GetClient() *http.Client {
 		err, token = createToken(token, conf, ctx)
 	}
 
-	src := oauth.NewTokenSource(ctx, conf, token, storeNewToken)
-
-	return oauth2.NewClient(ctx, src)
+	return oauth.New(ctx, conf, token, storeNewToken)
 }
 
 func createToken(token *oauth2.Token, conf *oauth2.Config, ctx context.Context) (error, *oauth2.Token) {

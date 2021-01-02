@@ -4,8 +4,29 @@ import (
 	"context"
 	"fmt"
 	"golang.org/x/oauth2"
+	"net/http"
 	"sync"
 )
+
+type OAuth struct {
+	httpClient *http.Client
+}
+
+func New(ctx context.Context, conf *oauth2.Config, t *oauth2.Token, f OnTokenExchangedFunc) *OAuth {
+	ts := &TokenSource{
+		new: conf.TokenSource(ctx, t),
+		t:   t,
+		f:   f,
+	}
+
+	return &OAuth{
+		httpClient: oauth2.NewClient(ctx, ts),
+	}
+}
+
+func (oauth *OAuth) GetClient() *http.Client {
+	return oauth.httpClient
+}
 
 // called when token refreshed
 // so new refresh token can be persisted
@@ -33,14 +54,6 @@ func (s *TokenSource) Token() (*oauth2.Token, error) {
 	}
 	s.t = t
 	return t, s.f(t)
-}
-
-func NewTokenSource(ctx context.Context, conf *oauth2.Config, t *oauth2.Token, f OnTokenExchangedFunc) *TokenSource {
-	return &TokenSource{
-		new: conf.TokenSource(ctx, t),
-		t:   t,
-		f:   f,
-	}
 }
 
 // clientId - integration id
