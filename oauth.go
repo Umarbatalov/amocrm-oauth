@@ -28,6 +28,12 @@ func (oauth *Client) Http() *http.Client {
 	return oauth.http
 }
 
+func Endpoint(baseUrl string) oauth2.Endpoint {
+	return oauth2.Endpoint{
+		TokenURL: fmt.Sprintf("%s/oauth2/access_token", baseUrl),
+	}
+}
+
 // called when token refreshed
 // so new refresh token can be persisted
 type OnTokenExchangedFunc func(*oauth2.Token) error
@@ -54,18 +60,4 @@ func (s *TokenSource) Token() (*oauth2.Token, error) {
 	}
 	s.t = t
 	return t, s.f(t)
-}
-
-// clientId - integration id
-// clientSecret - secret key
-// baseUrl - account url, example: https://example.amocrm.ru
-func NewConfig(clientId, clientSecret, redirectUrl, baseUrl string) *oauth2.Config {
-	return &oauth2.Config{
-		ClientID:     clientId,
-		ClientSecret: clientSecret,
-		RedirectURL:  redirectUrl,
-		Endpoint: oauth2.Endpoint{
-			TokenURL: fmt.Sprintf("%s/oauth2/access_token", baseUrl),
-		},
-	}
 }

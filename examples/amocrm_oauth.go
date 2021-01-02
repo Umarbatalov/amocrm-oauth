@@ -53,7 +53,13 @@ func main() {
 
 func client() *oauth.Client {
 	ctx := context.Background()
-	conf := oauth.NewConfig(clientId, clientSecret, redirectUrl, baseUrl)
+
+	conf := &oauth2.Config{
+		ClientID:     clientId,
+		ClientSecret: clientSecret,
+		RedirectURL:  redirectUrl,
+		Endpoint:     oauth.Endpoint(baseUrl),
+	}
 
 	token, err := getTokenFromStore()
 
