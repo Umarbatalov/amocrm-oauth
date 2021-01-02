@@ -28,7 +28,7 @@ func init() {
 	clientId = os.Getenv("CLIENT_ID")
 	clientSecret = os.Getenv("CLIENT_SECRET")
 	redirectUrl = os.Getenv("REDIRECT_URL")
-	accountUrl = os.Getenv("BASE_URL")
+	accountUrl = os.Getenv("ACCOUNT_URL")
 }
 
 func main() {
