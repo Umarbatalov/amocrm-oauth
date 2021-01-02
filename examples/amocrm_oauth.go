@@ -31,7 +31,7 @@ func init() {
 }
 
 func main() {
-	client := getOAuth().GetClient()
+	client := client().Http()
 
 	res, err := client.Get(baseUrl + "/api/v4/account")
 
@@ -51,7 +51,7 @@ func main() {
 	log.Println(fmt.Sprintf("Account: %+v", *account))
 }
 
-func getOAuth() *oauth.OAuth {
+func client() *oauth.Client {
 	ctx := context.Background()
 	conf := oauth.NewConfig(clientId, clientSecret, redirectUrl, baseUrl)
 

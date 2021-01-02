@@ -8,24 +8,24 @@ import (
 	"sync"
 )
 
-type OAuth struct {
-	httpClient *http.Client
+type Client struct {
+	http *http.Client
 }
 
-func New(ctx context.Context, conf *oauth2.Config, t *oauth2.Token, f OnTokenExchangedFunc) *OAuth {
+func New(ctx context.Context, conf *oauth2.Config, t *oauth2.Token, f OnTokenExchangedFunc) *Client {
 	ts := &TokenSource{
 		new: conf.TokenSource(ctx, t),
 		t:   t,
 		f:   f,
 	}
 
-	return &OAuth{
-		httpClient: oauth2.NewClient(ctx, ts),
+	return &Client{
+		http: oauth2.NewClient(ctx, ts),
 	}
 }
 
-func (oauth *OAuth) GetClient() *http.Client {
-	return oauth.httpClient
+func (oauth *Client) Http() *http.Client {
+	return oauth.http
 }
 
 // called when token refreshed
@@ -40,7 +40,7 @@ type TokenSource struct {
 }
 
 // Token returns the current token if it's still valid, else will
-// refresh the current token (using r.Context for HTTP client information)
+// refresh the current token (using r.Context for HTTP http information)
 // and return the new one.
 func (s *TokenSource) Token() (*oauth2.Token, error) {
 	s.mu.Lock()
