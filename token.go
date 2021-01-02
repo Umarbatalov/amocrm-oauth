@@ -1,38 +1,9 @@
 package oauth
 
 import (
-	"context"
-	"fmt"
 	"golang.org/x/oauth2"
-	"net/http"
 	"sync"
 )
-
-type Client struct {
-	http *http.Client
-}
-
-func New(ctx context.Context, conf *oauth2.Config, t *oauth2.Token, f OnTokenExchangedFunc) *Client {
-	ts := &TokenSource{
-		new: conf.TokenSource(ctx, t),
-		t:   t,
-		f:   f,
-	}
-
-	return &Client{
-		http: oauth2.NewClient(ctx, ts),
-	}
-}
-
-func (oauth *Client) Http() *http.Client {
-	return oauth.http
-}
-
-func Endpoint(baseUrl string) oauth2.Endpoint {
-	return oauth2.Endpoint{
-		TokenURL: fmt.Sprintf("%s/oauth2/access_token", baseUrl),
-	}
-}
 
 // called when token refreshed
 // so new refresh token can be persisted
